@@ -1,13 +1,32 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState } from 'react';
 
-export const memo1 = (fn) => fn();
+// basic - CustomNumber와 비슷하게 map을 사용함으로
+// map에 이미 값이 있는지 중복확인하기 = 값을 캐시하기
+const cache = new Map();
 
-export const memo2 = (fn) => fn();
+export const memo1 = (fn) => {
+  if (cache.has(fn)) return cache.get(fn);
 
+  const result = fn();
+  cache.set(fn, result);
+
+  return result;
+};
+
+export const memo2 = (fn, dependencies) => {
+  const key = dependencies.join(',');
+
+  if (cache.has(key)) return cache.get(key);
+
+  const result = fn();
+  cache.set(key, result);
+
+  return result;
+};
 
 export const useCustomState = (initValue) => {
   return useState(initValue);
-}
+};
 
 const textContextDefaultValue = {
   user: null,
@@ -27,36 +46,27 @@ export const TestContextProvider = ({ children }) => {
     <TestContext.Provider value={{ value, setValue }}>
       {children}
     </TestContext.Provider>
-  )
-}
+  );
+};
 
 const useTestContext = () => {
   return useContext(TestContext);
-}
+};
 
 export const useUser = () => {
   const { value, setValue } = useTestContext();
 
-  return [
-    value.user,
-    (user) => setValue({ ...value, user })
-  ];
-}
+  return [value.user, (user) => setValue({ ...value, user })];
+};
 
 export const useCounter = () => {
   const { value, setValue } = useTestContext();
 
-  return [
-    value.count,
-    (count) => setValue({ ...value, count })
-  ];
-}
+  return [value.count, (count) => setValue({ ...value, count })];
+};
 
 export const useTodoItems = () => {
   const { value, setValue } = useTestContext();
 
-  return [
-    value.todoItems,
-    (todoItems) => setValue({ ...value, todoItems })
-  ];
-}
+  return [value.todoItems, (todoItems) => setValue({ ...value, todoItems })];
+};
