@@ -133,25 +133,71 @@ export function createUnenumerableObject(target) {
 }
 
 export function forEach(target, callback) {
+  function toNumber(value) {
+    if (isFinite(value)) return Number(value);
+    return value;
+  }
 
+  const checkedTarget = Array.isArray(target)
+    ? createUnenumerableObject(Object.assign({}, target))
+    : target;
+
+  for (const key in Object.getOwnPropertyDescriptors(checkedTarget)) {
+    const value = Object.getOwnPropertyDescriptor(checkedTarget, key).value;
+    callback(toNumber(value), toNumber(key));
+  }
 }
 
 export function map(target, callback) {
+  if (Array.isArray(target)) {
+    return target.map(callback);
+  }
 
+  if (target instanceof NodeList) {
+    return Array.from(target).map(callback);
+  }
+
+  const newObj = {};
+  const keys = Object.getOwnPropertyNames(target);
+
+  keys.forEach((key) => {
+    newObj[key] = callback(target[key]);
+  });
+
+  return newObj;
 }
 
 export function filter(target, callback) {
+  if (Array.isArray(target)) {
+    return target.filter(callback);
+  }
 
+  if (target instanceof NodeList) {
+    return Array.from(target).filter(callback);
+  }
+
+  const newObj = {};
+  const keys = Object.getOwnPropertyNames(target);
+
+  keys.forEach((key) => {
+    if (callback(target[key])) {
+      newObj[key] = target[key];
+    }
+  });
+
+  return newObj;
 }
 
-
 export function every(target, callback) {
-
+  if (filter(target, callback).length !== target.length) {
+    return false;
+  }
+  return true;
 }
 
 export function some(target, callback) {
-
+  if (filter(target, callback).length !== 0) {
+    return true;
+  }
+  return false;
 }
-
-
-
