@@ -44,9 +44,37 @@ export function shallowEquals(target1, target2) {
 }
 
 export function deepEquals(target1, target2) {
-  return target1 === target2;
-}
+  // shallowEquals가 비슷하되, target의 child element들의 비교가 필요
+  // target의 child element들까지 shallowEquals로 true면 true
+  // 재귀 형식으로 계속 들어가기
 
+  if (shallowEquals(target1, target2)) return true;
+
+  if (typeof target1 !== 'object') return target1 === target2;
+
+  if (
+    target1.constructor.name !== 'Object' &&
+    target1.constructor.name !== 'Array'
+  ) {
+    return Object.is(target1, target2);
+  }
+
+  const keys1 = Object.keys(target1);
+  const keys2 = Object.keys(target2);
+
+  if (keys1.length !== keys2.length) return false;
+
+  for (let key of keys1) {
+    if (
+      !Object.hasOwnProperty.call(target2, key) ||
+      !deepEquals(target1[key], target2[key])
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 export function createNumber1(n) {
   return n;
