@@ -99,7 +99,27 @@ export function createNumber3(n) {
 }
 
 export class CustomNumber {
+  // map으로 값, 객체 저장해서
+  // 새로운 객체 생성 시 값이 중복되는지 확인
+  static usedNumbers = new Map();
 
+  constructor(n) {
+    if (CustomNumber.usedNumbers.has(n)) {
+      return CustomNumber.usedNumbers.get(n);
+    }
+
+    this.n = n;
+    CustomNumber.usedNumbers.set(n, this);
+  }
+  valueOf() {
+    return this.n;
+  }
+  toString() {
+    return String(this.n);
+  }
+  toJSON() {
+    return String(this.n);
+  }
 }
 
 export function createUnenumerableObject(target) {
