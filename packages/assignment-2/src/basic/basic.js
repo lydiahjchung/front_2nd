@@ -123,6 +123,12 @@ export class CustomNumber {
 }
 
 export function createUnenumerableObject(target) {
+  for (const key in target) {
+    Object.defineProperty(target, key, {
+      value: target[key],
+      enumerable: false,
+    });
+  }
   return target;
 }
 
