@@ -77,15 +77,25 @@ export function deepEquals(target1, target2) {
 }
 
 export function createNumber1(n) {
-  return n;
+  return new Object(n);
 }
 
 export function createNumber2(n) {
-  return n;
+  return new Object(String(n));
 }
 
 export function createNumber3(n) {
-  return n;
+  return {
+    valueOf() {
+      return n;
+    },
+    toJSON() {
+      return `this is createNumber3 => ${n}`;
+    },
+    toString() {
+      return n;
+    },
+  };
 }
 
 export class CustomNumber {
