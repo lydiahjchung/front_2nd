@@ -79,6 +79,12 @@ jobs:
           pnpm -F assignment-6 lint > eslint_report.txt
         continue-on-error: true
 
+      - name: Check ESLint results and fail if errors
+        run: |
+          if grep -q 'error' eslint_report.txt; then
+            exit 1
+          fi
+
       - name: Comment on ESLint results
         if: failure()
         uses: actions/github-script@v6
