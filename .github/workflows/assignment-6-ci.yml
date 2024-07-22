@@ -125,28 +125,33 @@ jobs:
       - name: Run tests and generate coverage
         run: |
           pnpm install
-          pnpm -F assignment-6 test -- --coverage > test_report.txt
+          pnpm -F assignment-6 test -- --coverage
 
-      - name: Comment on test results
-        if: success() # This will trigger only if the previous step succeeded
+      - name: Report Test Coverage
+        if: success()
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ github.token }}
           script: |
             const fs = require('fs');
-            const testReport = fs.readFileSync('test_report.txt', 'utf8');
+            const coverage = JSON.parse(fs.readFileSync("packages/assignment-6/coverage/coverage-summary.json", 'utf8'));
+            const totalCoverage = coverage.total;
+            const coverageTable = `
+            ## 테스트 성공 ✅
+            ### 커버리지 결과
+            - 라인 커버리지: ${totalCoverage.lines.pct}%
+            - 브랜치 커버리지: ${totalCoverage.branches.pct}%
+            - 함수 커버리지: ${totalCoverage.functions.pct}%
+            - 구문 커버리지: ${totalCoverage.statements.pct}%
+            `;
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `
-              ## 테스트 성공 ✅
-              ${testReport}
-              `
+              body: coverageTable
             });
 
-  # job4: lighthouse ci 실행, 실행 결과를 코멘트로 남김
-
+# job4: lighthouse ci 실행, 실행 결과를 코멘트로 남김
 #     lighthouse:
 #       runs-on: ubuntu-latest
 #       steps:
@@ -159,3 +164,4 @@ jobs:
 #       steps:
 #         - name: job5 구현
 #           run: echo "job5의 내용을 구현해주세요"
+
