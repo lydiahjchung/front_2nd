@@ -21,7 +21,7 @@ jobs:
           version: latest
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
         working-directory: packages/assignment-6
 
       - name: TypeScript Check
@@ -70,7 +70,7 @@ jobs:
           version: latest
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
         working-directory: packages/assignment-6
 
       - name: Run ESLint
@@ -119,7 +119,7 @@ jobs:
           version: latest
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
         working-directory: packages/assignment-6
 
       - name: Run tests and generate coverage
@@ -145,7 +145,8 @@ jobs:
               `
             });
 
-# job4: lighthouse ci 실행, 실행 결과를 코멘트로 남김
+  # job4: lighthouse ci 실행, 실행 결과를 코멘트로 남김
+
 #     lighthouse:
 #       runs-on: ubuntu-latest
 #       steps:
@@ -158,4 +159,3 @@ jobs:
 #       steps:
 #         - name: job5 구현
 #           run: echo "job5의 내용을 구현해주세요"
-
