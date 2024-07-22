@@ -64,12 +64,31 @@ jobs:
               body: 'The build has failed. Please check the logs for more details.'
             })
 
-# job2: eslint 실행, eslint에서 오류 발생 시 report를 코멘트에 남김
-#     lint:
-#       runs-on: ubuntu-latest
-#       steps:
-#         - name: job2 구현
-#           run: echo "job2의 내용을 구현해주세요"
+  # job2: eslint 실행, eslint에서 오류 발생 시 report를 코멘트에 남김
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run ESLint
+        run: pnpm run lint > eslint-report.txt
+        continue-on-error: true
+
+      - name: Read ESLint report
+        id: read-eslint-report
+        run: cat eslint-report.txt
+
+      - name: Comment on ESLint failure
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('eslint-report.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `The ESLint check has failed. Here is the report:\n\n\`\`\`\n${report}\n\`\`\``
+            })
 
 # job3: 테스트 실행, 커버리지 측정, 코멘트 남김
 #     test:
