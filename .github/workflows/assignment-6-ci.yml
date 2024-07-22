@@ -122,6 +122,9 @@ jobs:
         run: pnpm install --no-frozen-lockfile
         working-directory: packages/assignment-6
 
+      - name: Ensure coverage directory exists
+        run: mkdir -p packages/assignment-6/coverage
+
       - name: Run tests and generate coverage
         run: |
           pnpm install
@@ -167,4 +170,3 @@ jobs:
 #       steps:
 #         - name: job5 구현
 #           run: echo "job5의 내용을 구현해주세요"
-
