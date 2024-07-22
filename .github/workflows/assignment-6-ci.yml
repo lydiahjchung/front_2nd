@@ -106,7 +106,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `The ESLint check has failed. Here is the report:\n\n\`\`\`\n${report}\n\`\`\``
+              body: `ESLint Results\n\n\`\`\`\n${report}\n\`\`\``
             })
 
 # job3: 테스트 실행, 커버리지 측정, 코멘트 남김
