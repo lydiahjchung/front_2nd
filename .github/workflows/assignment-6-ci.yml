@@ -68,14 +68,32 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+        working-directory: packages/assignment-6
+
       - name: Run ESLint
-        run: pnpm run lint > eslint-report.txt
+        run: pnpm run lint
         continue-on-error: true
         working-directory: packages/assignment-6
 
-      - name: Read ESLint report
-        id: read-eslint-report
-        run: cat eslint-report.txt
+      - name: Create ESLint report
+        if: failure()
+        run: pnpm run lint > eslint-report.txt
         working-directory: packages/assignment-6
 
       - name: Comment on ESLint failure
@@ -84,7 +102,12 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const report = fs.readFileSync('eslint-report.txt', 'utf8');
+            let report = 'ESLint check failed.';
+            try {
+              report = fs.readFileSync('packages/assignment-6/eslint-report.txt', 'utf8');
+            } catch (error) {
+              console.error('Error reading ESLint report:', error);
+            }
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
