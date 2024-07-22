@@ -74,31 +74,27 @@ jobs:
         working-directory: packages/assignment-6
 
       - name: Run ESLint
-        id: eslint
         run: |
-          output=$(pnpm run lint 2>&1) || true
-          echo "$output" > eslint-report.txt
-          echo "eslint_exit_code=$?" >> $GITHUB_OUTPUT
-        working-directory: packages/assignment-6
+          pnpm install
+          pnpm -F assignment-6 lint > eslint_report.txt
 
       - name: Comment on ESLint results
-        if: steps.eslint.outputs.eslint_exit_code != '0'
+        if: failure()
         uses: actions/github-script@v6
         with:
+          github-token: ${{ github.token }}
           script: |
-            const fs = require('fs');
-            let report = 'ESLint check failed.';
-            try {
-              report = fs.readFileSync('packages/assignment-6/eslint-report.txt', 'utf8');
-            } catch (error) {
-              console.error('Error reading ESLint report:', error);
-            }
-            github.rest.issues.createComment({
+            const fs = require('fs')
+            const eslintReport = fs.readFileSync('eslint_report.txt', 'utf8')
+            await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `ESLint Results:\n\n\`\`\`\n${report}\n\`\`\``
-            })
+              body: `
+              ## ESLint Results
+              ${eslintReport}
+              `
+            });
 
 # job3: 테스트 실행, 커버리지 측정, 코멘트 남김
 #     test:
