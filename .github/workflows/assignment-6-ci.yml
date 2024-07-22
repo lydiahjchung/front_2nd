@@ -74,17 +74,15 @@ jobs:
         working-directory: packages/assignment-6
 
       - name: Run ESLint
-        run: pnpm run lint
-        continue-on-error: true
+        id: eslint
+        run: |
+          output=$(pnpm run lint 2>&1) || true
+          echo "$output" > eslint-report.txt
+          echo "eslint_exit_code=$?" >> $GITHUB_OUTPUT
         working-directory: packages/assignment-6
 
-      - name: Create ESLint report
-        if: failure()
-        run: pnpm run lint > eslint-report.txt
-        working-directory: packages/assignment-6
-
-      - name: Comment on ESLint failure
-        if: failure()
+      - name: Comment on ESLint results
+        if: steps.eslint.outputs.eslint_exit_code != '0'
         uses: actions/github-script@v6
         with:
           script: |
@@ -99,7 +97,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `The ESLint check has failed. Here is the report:\n\n\`\`\`\n${report}\n\`\`\``
+              body: `ESLint Results:\n\n\`\`\`\n${report}\n\`\`\``
             })
 
 # job3: 테스트 실행, 커버리지 측정, 코멘트 남김
