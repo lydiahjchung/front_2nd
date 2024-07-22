@@ -71,10 +71,12 @@ jobs:
       - name: Run ESLint
         run: pnpm run lint > eslint-report.txt
         continue-on-error: true
+        working-directory: packages/assignment-6
 
       - name: Read ESLint report
         id: read-eslint-report
         run: cat eslint-report.txt
+        working-directory: packages/assignment-6
 
       - name: Comment on ESLint failure
         if: failure()
