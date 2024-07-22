@@ -106,12 +106,44 @@ jobs:
               `
             });
 
-# job3: 테스트 실행, 커버리지 측정, 코멘트 남김
-#     test:
-#       runs-on: ubuntu-latest
-#       steps:
-#         - name: job3 구현
-#           run: echo "job3의 내용을 구현해주세요"
+  # job3: 테스트 실행, 커버리지 측정, 코멘트 남김
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: pnpm install
+        working-directory: packages/assignment-6
+
+      - name: Run tests and generate coverage
+        run: |
+          pnpm install
+          pnpm -F assignment-6 test -- --coverage > test_report.txt
+
+      - name: Comment on test results
+        if: success() # This will trigger only if the previous step succeeded
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const testReport = fs.readFileSync('test_report.txt', 'utf8');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `
+              ## 테스트 성공 ✅
+              ${testReport}
+              `
+            });
 
 # job4: lighthouse ci 실행, 실행 결과를 코멘트로 남김
 #     lighthouse:
