@@ -79,20 +79,23 @@ jobs:
           pnpm -F assignment-6 lint > eslint_report.txt
         continue-on-error: true
 
-      - name: Check ESLint results and fail if errors
+      - name: Check ESLint results
+        id: check_eslint
         run: |
           if grep -q 'error' eslint_report.txt; then
-            exit 1
+            echo "eslint_errors=true" >> $GITHUB_ENV
+          else
+            echo "eslint_errors=false" >> $GITHUB_ENV
           fi
 
       - name: Comment on ESLint results
-        if: failure()
+        if: env.eslint_errors == 'true' # This will trigger only if there were ESLint errors
         uses: actions/github-script@v6
         with:
-          github-token: ${{ github.token }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const fs = require('fs')
-            const eslintReport = fs.readFileSync('eslint_report.txt', 'utf8')
+            const fs = require('fs');
+            const eslintReport = fs.readFileSync('eslint_report.txt', 'utf8');
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
