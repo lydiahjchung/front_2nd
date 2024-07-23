@@ -128,7 +128,7 @@ jobs:
       - name: Run tests and generate coverage
         run: |
           pnpm install
-          pnpm -F assignment-6 test -- --coverage --coverageReporters="json-summary"
+          pnpm -F assignment-6 run coverage
         working-directory: packages/assignment-6
 
       - name: List coverage directory contents
