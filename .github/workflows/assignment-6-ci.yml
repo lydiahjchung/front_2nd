@@ -128,7 +128,8 @@ jobs:
       - name: Run tests and generate coverage
         run: |
           pnpm install
-          pnpm -F assignment-6 test -- --coverage
+          pnpm -F assignment-6 test -- --coverage --coverageReporters="json-summary"
+        working-directory: packages/assignment-6
 
       - name: List coverage directory contents
         run: ls -R packages/assignment-6/coverage
@@ -140,7 +141,14 @@ jobs:
           github-token: ${{ github.token }}
           script: |
             const fs = require('fs');
-            const coverage = JSON.parse(fs.readFileSync("packages/assignment-6/coverage/coverage-summary.json", 'utf8'));
+            const path = "packages/assignment-6/coverage/coverage-summary.json";
+
+            if (!fs.existsSync(path)) {
+              console.log(`Coverage file not found: ${path}`);
+              return;
+            }
+
+            const coverage = JSON.parse(fs.readFileSync(path, 'utf8'));
             const totalCoverage = coverage.total;
             const coverageTable = `
             ## 테스트 성공 ✅
