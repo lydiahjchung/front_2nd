@@ -188,7 +188,7 @@ jobs:
           pnpm -F assignment-6 lighthouse
 
       - name: Report Lighthouse
-        if: success()
+        if: always()
         uses: actions/github-script@v6
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
