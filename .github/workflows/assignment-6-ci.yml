@@ -165,12 +165,69 @@ jobs:
               body: coverageTable
             });
 
-# job4: lighthouse ci 실행, 실행 결과를 코멘트로 남김
-#     lighthouse:
-#       runs-on: ubuntu-latest
-#       steps:
-#         - name: job4 구현
-#           run: echo "job4의 내용을 구현해주세요"
+  # job4: lighthouse ci 실행, 실행 결과를 코멘트로 남김
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+        working-directory: packages/assignment-6
+
+      - name: Build project
+        run: pnpm run build
+        working-directory: packages/assignment-6
+
+      - name: Run Lighthouse CI
+        run: |
+          npm install -g @lhci/cli@0.11.x
+          lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      - name: Format Lighthouse results
+        id: format_results
+        run: |
+          RESULTS=$(cat .lighthouseci/manifest.json | jq -r '.[] | select(.url | contains("http")) | .summary')
+          echo "performance=$(echo $RESULTS | jq -r '.performance * 100 | floor')" >> $GITHUB_OUTPUT
+          echo "accessibility=$(echo $RESULTS | jq -r '.accessibility * 100 | floor')" >> $GITHUB_OUTPUT
+          echo "best_practices=$(echo $RESULTS | jq -r '.["best-practices"] * 100 | floor')" >> $GITHUB_OUTPUT
+          echo "seo=$(echo $RESULTS | jq -r '.seo * 100 | floor')" >> $GITHUB_OUTPUT
+
+      - name: Comment Lighthouse results
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const performance = ${{ steps.format_results.outputs.performance }};
+            const accessibility = ${{ steps.format_results.outputs.accessibility }};
+            const bestPractices = ${{ steps.format_results.outputs.best_practices }};
+            const seo = ${{ steps.format_results.outputs.seo }};
+
+            const comment = `
+            ## Lighthouse 성능 측정 결과
+
+            | 카테고리 | 점수 |
+            |----------|------|
+            | Performance | ${performance}% |
+            | Accessibility | ${accessibility}% |
+            | Best Practices | ${bestPractices}% |
+            | SEO | ${seo}% |
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
 
 # job5: PR이 open 될 때만 실행됨, 팀원 중 한 명을 랜덤으로 선정하여 리뷰어 지정, 코멘트에 멘션해서 올림
 #     assign_reviewer:
