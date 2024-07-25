@@ -158,6 +158,8 @@ jobs:
         uses: ./.github/actions/setup-node-dependencies
 
       - name: Install Lighthouse CI
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
         run: |
           npm i -g @lhci/cli
 
@@ -165,38 +167,64 @@ jobs:
         run: |
           pnpm -F assignment-6 lighthouse
 
-      - name: Report Lighthouse
-        if: always()
-        uses: actions/github-script@v6
-        env:
-          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+      - name: Format lighthouse score
+        id: format_lighthouse_score
+        uses: actions/github-script@v3
         with:
-          github-token: ${{ secrets.TOKEN_FOR_CI }}
+          github-token: ${{secrets.TOKEN_FOR_CI}}
           script: |
-            const performance = ${{ steps.format_results.outputs.performance }};
-            const accessibility = ${{ steps.format_results.outputs.accessibility }};
-            const bestPractices = ${{ steps.format_results.outputs.best_practices }};
-            const seo = ${{ steps.format_results.outputs.seo }};
 
-            const comment = `
-            ## Lighthouse 성능 측정 결과
+            const fs = require('fs');
+              # 본인의 환경에 맞게 설정해주세요
+              const results = JSON.parse(fs.readFileSync("/{Github Actions runner directory}/lhci_reports/manifest.json"));
+              # comment를 담을 변수 입니다.
+              let comments = "";
 
-            | 카테고리 | 점수 |
-            |----------|------|
-            | Performance | ${performance}% |
-            | Accessibility | ${accessibility}% |
-            | Best Practices | ${bestPractices}% |
-            | SEO | ${seo}% |
-            `;
+              results.forEach((result) => {
+                const { summary, jsonPath } = result;
+                const { audits } = details;
 
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
+                const details = JSON.parse(fs.readFileSync(jsonPath));
+                const formatResult = (res) => Math.round(res * 100);
 
-# job5: PR이 open 될 때만 실행됨, 팀원 중 한 명을 랜덤으로 선정하여 리뷰어 지정, 코멘트에 멘션해서 올림
+                Object.keys(summary).forEach(
+                  (key) => (summary[key] = formatResult(summary[key]))
+                );
+
+                # 점수가 색상으로 구분되는 방식 (https://web.dev/performance-scoring/#color-coding)
+                const score = (res) => (res >= 90 ? "🟢" : res >= 50 ? "🟠" : "🔴");
+
+                const comment = [
+                  `⚡️ Lighthouse report!`,
+                  `| Category | Score |`,
+                  `| --- | --- |`,
+                  `| ${score(summary.performance)} Performance | ${summary.performance} |`,
+                  { ... }
+                ].join("\n");
+
+                const detail = [
+                  `| Category | Score |`,
+                  `| --- | --- |`,
+                  `| ${score(
+                    audits["first-contentful-paint"].score * 100
+                  )} First Contentful Paint | ${
+                    audits["first-contentful-paint"].displayValue
+                  } |`,
+                  { ... }
+                ].join("\n");
+                comments += comment + "\n" + detail + "\n";
+              });
+              # comments 변수의 값을 다음 job으로 넘겨줍니다.
+              core.setOutput('comments', comments)
+
+      - name: comment PR
+        uses: unsplash/comment-on-pr@v1.3.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_CI }}
+        with:
+          msg: ${{ steps.format_lighthouse_score.outputs.comments}}
+
+          # job5: PR이 open 될 때만 실행됨, 팀원 중 한 명을 랜덤으로 선정하여 리뷰어 지정, 코멘트에 멘션해서 올림
 #     assign_reviewer:
 #       runs-on: ubuntu-latest
 #       steps:
