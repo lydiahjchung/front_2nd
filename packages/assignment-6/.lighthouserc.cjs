@@ -1,9 +1,12 @@
 module.exports = {
   ci: {
     collect: {
-      staticDistDir: "./", // Use current directory
-      url: ["index.html"], // Test the simple HTML file
+      staticDistDir: "./",
+      url: ["index.html"],
       numberOfRuns: 1,
+      settings: {
+        chromeFlags: "--no-sandbox --disable-gpu --disable-dev-shm-usage",
+      },
     },
     upload: {
       target: "temporary-public-storage",

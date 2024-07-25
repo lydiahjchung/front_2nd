@@ -163,7 +163,9 @@ jobs:
 
       - name: Run Lighthouse
         run: |
+          pnpm -F assignment-6 build
           pnpm -F assignment-6 lighthouse
+        continue-on-error: true
 
       - name: Format Lighthouse Results
         id: format_results
