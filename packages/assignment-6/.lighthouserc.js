@@ -1,7 +1,7 @@
 module.exports = {
   ci: {
     collect: {
-      staticDistDir: "./build",
+      staticDistDir: "./dist",
       url: ["http://localhost:5173"],
       numberOfRuns: 1,
     },
