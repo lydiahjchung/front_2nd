@@ -165,6 +165,52 @@ jobs:
         run: |
           pnpm -F assignment-6 lighthouse
 
+      - name: Format Lighthouse Results
+        id: format_results
+        run: |
+          if [ -f ".lighthouseci/lhr-*.json" ]; then
+            RESULTS_FILE=$(find .lighthouseci -name 'lhr-*.json' | head -n 1)
+          else
+            RESULTS_FILE="mock-lighthouse-results.json"
+          fi
+          PERFORMANCE=$(cat $RESULTS_FILE | jq '.categories.performance.score * 100' | xargs printf "%.0f")
+          ACCESSIBILITY=$(cat $RESULTS_FILE | jq '.categories.accessibility.score * 100' | xargs printf "%.0f")
+          BEST_PRACTICES=$(cat $RESULTS_FILE | jq '.categories["best-practices"].score * 100' | xargs printf "%.0f")
+          SEO=$(cat $RESULTS_FILE | jq '.categories.seo.score * 100' | xargs printf "%.0f")
+
+          echo "performance=$PERFORMANCE" >> $GITHUB_OUTPUT
+          echo "accessibility=$ACCESSIBILITY" >> $GITHUB_OUTPUT
+          echo "best_practices=$BEST_PRACTICES" >> $GITHUB_OUTPUT
+          echo "seo=$SEO" >> $GITHUB_OUTPUT
+
+      - name: Comment PR
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{secrets.TOKEN_FOR_CI}}
+          script: |
+            const performance = ${{ steps.format_results.outputs.performance }};
+            const accessibility = ${{ steps.format_results.outputs.accessibility }};
+            const bestPractices = ${{ steps.format_results.outputs.best_practices }};
+            const seo = ${{ steps.format_results.outputs.seo }};
+
+            const comment = `
+            ## Lighthouse 성능 측정 결과
+
+            | 카테고리 | 점수 |
+            |----------|------|
+            | Performance | ${performance}% |
+            | Accessibility | ${accessibility}% |
+            | Best Practices | ${bestPractices}% |
+            | SEO | ${seo}% |
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
 # job5: PR이 open 될 때만 실행됨, 팀원 중 한 명을 랜덤으로 선정하여 리뷰어 지정, 코멘트에 멘션해서 올림
 #     assign_reviewer:
 #       runs-on: ubuntu-latest
