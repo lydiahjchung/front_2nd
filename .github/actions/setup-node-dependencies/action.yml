@@ -3,6 +3,7 @@ description: Sets up Node.js, pnpm, and installs dependencies
 
 runs:
   using: "composite"
+
   steps:
     - name: Install pnpm
       uses: pnpm/action-setup@v4
@@ -27,6 +28,7 @@ runs:
         key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
           ${{ runner.os }}-pnpm-
+
     - name: Install dependencies
       run: pnpm install --prefer-frozen-lockfile
       shell: bash
