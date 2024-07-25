@@ -109,7 +109,7 @@ jobs:
 
       - name: Run tests and generate coverage
         run: |
-          pnpm iF assignment-6 test
+          pnpm -F assignment-6 test
           pnpm -F assignment-6 coverage
         working-directory: packages/assignment-6
 
