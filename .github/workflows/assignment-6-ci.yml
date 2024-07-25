@@ -6,7 +6,7 @@ on:
       - assignment/6
     paths:
       - "packages/assignment-6/**"
-      - ".github/actions/setup-node-and-dependencies/**"
+      - ".github/actions/setup-node-dependencies/**"
 
 jobs:
   # job1: tsc, build 실행, 오류 발생하면 코멘트 남김
@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node.js and Dependencies
-        uses: ./.github/actions/setup-node-and-dependencies
+        uses: ./.github/actions/setup-node-dependencies
 
       - name: TypeScript Check
         run: pnpm run tsc
@@ -60,7 +60,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node.js and Dependencies
-        uses: ./.github/actions/setup-node-and-dependencies
+        uses: ./.github/actions/setup-node-dependencies
 
       - name: Run ESLint
         run: |
@@ -102,7 +102,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node.js and Dependencies
-        uses: ./.github/actions/setup-node-and-dependencies
+        uses: ./.github/actions/setup-node-dependencies
 
       - name: Ensure coverage directory exists
         run: mkdir -p packages/assignment-6/coverage
@@ -155,7 +155,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node.js and Dependencies
-        uses: ./.github/actions/setup-node-and-dependencies
+        uses: ./.github/actions/setup-node-dependencies
 
       - name: Install Lighthouse CI
         run: |
