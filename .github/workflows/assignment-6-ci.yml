@@ -6,6 +6,7 @@ on:
       - assignment/6
     paths:
       - "packages/assignment-6/**"
+      - ".github/actions/setup-node-and-dependencies/**"
 
 jobs:
   # job1: tsc, build 실행, 오류 발생하면 코멘트 남김
@@ -13,16 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: latest
-
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-        working-directory: packages/assignment-6
+      - name: Setup Node.js and Dependencies
+        uses: ./.github/actions/setup-node-and-dependencies
 
       - name: TypeScript Check
         run: pnpm run tsc
@@ -42,7 +37,7 @@ jobs:
             })
 
       - name: Build
-        run: pnpm run build
+        run: pnpm -F assignment-6 build
         continue-on-error: true
 
       - name: Comment on failure
@@ -62,20 +57,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: latest
-
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-        working-directory: packages/assignment-6
+      - name: Setup Node.js and Dependencies
+        uses: ./.github/actions/setup-node-and-dependencies
 
       - name: Run ESLint
         run: |
-          pnpm install
           pnpm -F assignment-6 lint > eslint_report.txt
         continue-on-error: true
 
@@ -111,24 +99,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: latest
-
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-        working-directory: packages/assignment-6
+      - name: Setup Node.js and Dependencies
+        uses: ./.github/actions/setup-node-and-dependencies
 
       - name: Ensure coverage directory exists
         run: mkdir -p packages/assignment-6/coverage
 
       - name: Run tests and generate coverage
         run: |
-          pnpm install
-          pnpm -F assignment-6 run coverage
+          pnpm iF assignment-6 test
+          pnpm -F assignment-6 coverage
         working-directory: packages/assignment-6
 
       - name: List coverage directory contents
@@ -170,17 +152,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: latest
+      - name: Setup Node.js and Dependencies
+        uses: ./.github/actions/setup-node-and-dependencies
 
       - name: Install Lighthouse CI
         run: |
-          npm i -g @lhci/cli 
-          pnpm install --prefer-frozen-lockfile
+          npm i -g @lhci/cli
 
       - name: Build Local Server
         run: |
